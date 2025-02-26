@@ -42,10 +42,14 @@
         <div class="discussions">
             {% for discussion in discussions %}
             <div class="discussion-item">
+                <img class="discussion-avatar" src="{{ discussion.avatar }}" alt="头像" width="32" height="32"
+                onerror="this.src='/static/images/default-avatar.png'">
                 <p class="discussion-author">{{ discussion.author }}</p>
-                {% autoescape false %}
+
+                {% autoescape false %} <!-- VULN: 没有转义，造成XSS漏洞 -->
                 <p class="discussion-content">{{ discussion.content }}</p>
                 {% endautoescape %}
+
                 <p class="discussion-time">{{ discussion.created_at }}</p>
                 {% if username and username == discussion.author %}
                 <button class="delete-btn" data-id="{{ discussion.id }}">删除</button>
@@ -107,6 +111,10 @@
     </script>
 
     <style>
+        .discussion-avatar {
+            border-radius: 50%;
+        }
+
         .discussion-form {
             display: flex;
             flex-direction: column;

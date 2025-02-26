@@ -79,9 +79,9 @@ def get_discussions():
         c = conn.cursor()
         
         c.execute('''
-            SELECT d.id, u.username, d.content, d.created_at 
+            SELECT d.id, u.username, u.avatar, d.content, d.created_at 
             FROM discussions d
-            JOIN users u ON d.username = u.username
+            LEFT JOIN users u ON d.username = u.username
             ORDER BY d.created_at DESC
         ''')
         
@@ -89,8 +89,9 @@ def get_discussions():
             {
                 'id': row[0],
                 'author': row[1],
-                'content': row[2],
-                'created_at': row[3]
+                'avatar': row[2],
+                'content': row[3],
+                'created_at': row[4]
             } for row in c.fetchall()
         ]
         return discussions

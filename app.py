@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, jsonify, redirect
 import database
 from util import generate_token, verify_token
 import os
+import requests
+from urllib.parse import urlparse
 
 app = Flask(__name__)
 
@@ -115,8 +117,42 @@ def upload_avatar():
 
     database.update_user_avatar(payload['username'], file_path)
     return jsonify({'success': True, 'message': '上传成功'})
+
+@app.route('/upload-avatar-by-url', methods=['POST'])
+def upload_avatar_url():
+    token = request.cookies.get('token')
+    if not token:
+        return jsonify({'success': False, 'message': '请先登录'})
     
+    payload = verify_token(token)
     
+    url = request.form.get('avatar_url')
+    if not url:
+        return jsonify({'success': False, 'message': '请提供图片URL'})
+    
+    # VULN: `/upload-avatar`中的所有漏洞，此处都有
+    # VULN: 没有限制URL来源，攻击者可以上传任意URL的图片，此处有SSRF漏洞
+    try:
+        parsed_url = urlparse(url)
+        filename = os.path.basename(parsed_url.path)
+        
+        # 下载图片
+        response = requests.get(url, timeout=5)
+        if response.status_code != 200:
+            return jsonify({'success': False, 'message': '无法下载图片'})
+            
+        # 保存图片
+        file_path = os.path.join('static/avatars', filename)
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
+            
+        database.update_user_avatar(payload['username'], file_path)
+        return jsonify({'success': True, 'message': '上传成功'})
+
+    except Exception as e:
+        print(f"Error uploading avatar from URL: {e}")
+        return jsonify({'success': False, 'message': '上传失败'})
+
 @app.route('/add-discussion', methods=['POST'])
 def post_discussion():
     token = request.cookies.get('token')

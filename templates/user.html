@@ -25,6 +25,7 @@
 
     <h3>修改头像</h3>
 
+    <h4>从本地上传</h4>
     <form action="/upload-avatar" method="POST" enctype="multipart/form-data" id="uploadAvatarForm"
         class="upload-avatar-form">
         <div>当前头像：</div>
@@ -32,17 +33,28 @@
             {% if avatar %}
             <img src="{{ avatar }}" alt="头像" width="128" height="128">
             {% else %}
-            <>您当前没有头像</p>
+            <p>您当前没有头像</p>
             {% endif %}
         </div>
         <input type="file" name="avatar">
-        <button type="submit">修改头像</button>
+        <button type="submit">上传并修改头像</button>
         <details>
             <summary>VULN: 文件上传漏洞</summary>
             <p>此处没有做文件重命名和文件名sanitize，有文件覆盖漏洞和路径穿越漏洞</p>
-            <p>甚至可以做到任意文件写，进而造成RCE</p>
+            <p>甚至可以做到任意文件写（进而造成RCE）</p>
             <p>例1：上传一个和其他人头像同名的文件，即可覆盖其他人的头像</p>
-            <p>例2：上传一个文件，并使用Brup Suite抓包，将<code>filename</code>修改为<code>../banner.png</code>，即可覆盖主页banner</p>
+            <p>例2：上传一个文件，并使用Brup Suite抓包，将<code>filename</code>修改为<code>../images/banner.png</code>，即可覆盖主页banner</p>
+        </details>
+    </form>
+
+    <h4>从网络上传</h4>
+    <form action="/upload-avatar-by-url" method="POST" id="uploadAvatarByUrlForm">
+        <input type="text" name="avatar_url" placeholder="头像URL">
+        <button type="submit">上传网络头像</button>
+        <details>
+            <summary>VULN: SSRF漏洞</summary>
+            <p>此处没有限制URL来源，攻击者可以上传任意URL的图片，此处有SSRF漏洞</p>
+            <p>输入一个内网IP，即可探测内网</p>
         </details>
     </form>
 
@@ -81,6 +93,26 @@
                 alert('上传失败，请稍后重试');
             }
         }); 
+
+        document.getElementById('uploadAvatarByUrlForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/upload-avatar-by-url', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.success) {
+                    window.location.reload();
+                } else {
+                    alert(response.message);
+                }
+            } catch (error) {
+                alert('上传失败，请稍后重试');
+            }
+        });
     </script>
     <style>
         code {
