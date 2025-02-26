@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>非常不安全的网站</title>
+</head>
+
+<body>
+    <h1>非常不安全的网站</h1>
+    <h2>
+        {% if username %}
+        欢迎回来，{{ username }}
+        {% else %}
+        你好，游客
+        {% endif %}
+    </h2>
+    <div class="button-container">
+        <button onclick="window.location.href='/register'">注册</button>
+        {% if username %}
+        <button onclick="window.location.href='/user'">用户中心</button>
+        {% else %}
+        <button onclick="window.location.href='/login'">登录</button>
+        {% endif %}
+    </div>
+
+    <div>
+        <h3>讨论区</h3>
+
+        <details>
+            <summary>VULN: XSS漏洞</summary>
+            <p>在发表讨论时，输入
+            <pre>&lt;script&gt;alert('XSS')&lt;/script&gt;</pre>，即可触发XSS漏洞</p>
+        </details>
+
+        <form action="/discussion" method="POST" class="discussion-form" id="discussionForm">
+            <textarea name="content" placeholder="写下你的想法..." required></textarea>
+            <button type="submit">发表</button>
+        </form>
+
+        <div class="discussions">
+            {% for discussion in discussions %}
+            <div class="discussion-item">
+                <p class="discussion-author">{{ discussion.author }}</p>
+                {% autoescape false %}
+                <p class="discussion-content">{{ discussion.content }}</p>
+                {% endautoescape %}
+                <p class="discussion-time">{{ discussion.created_at }}</p>
+                {% if username and username == discussion.author %}
+                <button class="delete-btn" data-id="{{ discussion.id }}">删除</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('discussionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/add-discussion', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    window.location.reload();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('发布失败，请稍后重试');
+            }
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', async () => {
+                if (!confirm('确定要删除这条讨论吗？')) return;
+
+                const id = button.dataset.id;
+                try {
+                    const response = await fetch('/delete-discussion', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id: id })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.reload();
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    alert('删除失败，请稍后重试');
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .discussion-form {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .discussion-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .discussion-author {
+            font-weight: bold;
+        }
+
+        .discussion-time {
+            color: #666;
+            font-size: 0.8em;
+        }
+    </style>
+</body>
+
+</html>

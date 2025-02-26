@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心</title>
+</head>
+
+<body>
+
+    <h1>用户中心</h1>
+
+    <h3>修改密码</h3>
+
+    <form action="/change-password" method="POST">
+        <input type="password" name="new_password" placeholder="新密码">
+        <button type="submit">修改密码</button>
+        <details>
+            <summary>VULN: CSRF漏洞</summary>
+            <p>恶意网站可以利用登录状态伪造请求，修改你的密码</p>
+            <a href="/evil">跳转到恶意网站</a>
+        </details>
+    </form>
+
+    <h3>修改头像</h3>
+
+    <form action="/upload-avatar" method="POST" enctype="multipart/form-data" id="uploadAvatarForm"
+        class="upload-avatar-form">
+        <div>当前头像：</div>
+            <div>
+            {% if avatar %}
+            <img src="{{ avatar }}" alt="头像" width="128" height="128">
+            {% else %}
+            <>您当前没有头像</p>
+            {% endif %}
+        </div>
+        <input type="file" name="avatar">
+        <button type="submit">修改头像</button>
+        <details>
+            <summary>VULN: 文件上传漏洞</summary>
+            <p>此处没有做文件重命名和文件名sanitize，有文件覆盖漏洞和路径穿越漏洞</p>
+            <p>甚至可以做到任意文件写，进而造成RCE</p>
+            <p>例1：上传一个和其他人头像同名的文件，即可覆盖其他人的头像</p>
+            <p>例2：上传一个文件，并使用Brup Suite抓包，将<code>filename</code>修改为<code>../banner.png</code>，即可覆盖主页banner</p>
+        </details>
+    </form>
+
+    <h3>退出登录</h3>
+
+    <button onclick="handleLogout()">退出登录</button>
+    <script>
+        function handleLogout() {
+            fetch('/logout', {
+                method: 'POST'
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                }
+            });
+        }
+
+        document.getElementById('uploadAvatarForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/upload-avatar', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    window.location.reload();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('上传失败，请稍后重试');
+            }
+        }); 
+    </script>
+    <style>
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</body>
+
+</html>

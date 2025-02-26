@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+</head>
+<body>
+    <h1>注册</h1>
+    <form class="register-form" id="registerForm" onsubmit="return handleSubmit(event)">
+        <div class="form-group">
+            <span class="error" id="username-error"></span>
+            <input type="text" name="username" id="username" placeholder="用户名">
+        </div>
+        <div class="form-group">
+            <span class="error" id="password-error"></span>
+            <input type="text" name="password" id="password" placeholder="密码">
+        </div>
+        <button type="submit">注册</button>
+    </form>
+
+    <style>
+        pre {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: 10px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .error {
+            font-size: 12px;
+            color: red;
+        }
+    </style>
+
+    <script>
+        function validateForm() {
+            let isValid = true;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // 用户名验证
+            if (username.length < 3) {
+                document.getElementById('username-error').textContent = '用户名至少需要3个字符';
+                isValid = false;
+            } else if (username.length > 20) {
+                document.getElementById('username-error').textContent = '用户名不能超过20个字符';
+                isValid = false;
+            } else {
+                document.getElementById('username-error').textContent = '';
+            }
+            
+            // 密码验证
+            if (password.length < 6) {
+                document.getElementById('password-error').textContent = '密码至少需要6个字符';
+                isValid = false;
+            } else if (password.length > 20) {
+                document.getElementById('password-error').textContent = '密码不能超过20个字符';
+                isValid = false;
+            } else if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(password)) {
+                document.getElementById('password-error').textContent = '密码必须包含字母和数字';
+                isValid = false;
+            } else {
+                document.getElementById('password-error').textContent = '';
+            }
+            
+            return isValid;
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            if (!validateForm()) {
+                return false;
+            }
+
+            const formData = new FormData(document.getElementById('registerForm'));
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                const messageDiv = document.getElementById('submit-message');
+                
+                if (result.success) {
+                    window.alert('注册成功');
+                    window.location.href = '/';
+                } else {
+                    window.alert('注册失败：' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.alert('注册失败：' + error);
+            }
+            
+            return false;
+        }
+    </script>
+    <details>
+        <summary>VULN: 跳过前端校验</summary>
+        <p>直接向后端发送请求（使用chrome 开发者工具、postman、burp suite等工具）</p>
+        <pre>
+const res = await fetch('/register', {
+    method: 'POST',
+    body: {
+        username: 'verylonglonglonglonglonglongname',
+        password: '1'
+    }
+})
+const data = await res.json()
+console.log(data)
+        </pre>
+    </details>
+</body>
+</html>
