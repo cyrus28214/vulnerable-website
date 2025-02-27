@@ -4,8 +4,6 @@
 
 搜索`VULN`可以找到大部分漏洞（但不是全部）。
 
-灵感来源：[https://github.com/OWASP/Vulnerable-Web-Application](https://github.com/OWASP/Vulnerable-Web-Application)
-
 ## 漏洞列表
 
 - SQL注入
@@ -28,4 +26,8 @@ pip install -r requirements.txt
 # 运行
 python app.py
 ```
+
+## 灵感来源
+
+[https://github.com/OWASP/Vulnerable-Web-Application](https://github.com/OWASP/Vulnerable-Web-Application)
 
