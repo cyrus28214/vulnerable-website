@@ -104,10 +104,11 @@
                     method: 'POST',
                     body: formData
                 });
-                if (response.success) {
+                const result = await response.json();
+                if (result.success) {
                     window.location.reload();
                 } else {
-                    alert(response.message);
+                    alert(result.message);
                 }
             } catch (error) {
                 alert('上传失败，请稍后重试');

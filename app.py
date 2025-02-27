@@ -40,6 +40,7 @@ def register():
         return render_template('register.html')
     
     if request.method == 'POST':
+        print(request.form)
         # VULN: 未对用户输入进行校验
         username = request.form.get('username')
         password = request.form.get('password')
@@ -49,7 +50,7 @@ def register():
         
         if database.register_user(username, password):
             token = generate_token(username)
-            response = jsonify({'success': True, 'message': '登录成功', 'token': token})
+            response = jsonify({'success': True, 'message': '注册成功', 'token': token})
             response.set_cookie('token', token)
             return response
         else:

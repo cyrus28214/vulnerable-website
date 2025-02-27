@@ -14,3 +14,18 @@
 - 文件覆盖漏洞
 - 路径穿越漏洞
 - 任意文件写
+
+## 运行
+
+```bash
+# 推荐使用虚拟环境
+python -m venv venv
+source venv/bin/activate
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 运行
+python app.py
+```
+

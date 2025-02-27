@@ -109,12 +109,12 @@
         <summary>VULN: 跳过前端校验</summary>
         <p>直接向后端发送请求（使用chrome 开发者工具、postman、burp suite等工具）</p>
         <pre>
+const form = new FormData()
+form.append('username', 'verylonglonglonglonglonglongname')
+form.append('password', '1')
 const res = await fetch('/register', {
     method: 'POST',
-    body: {
-        username: 'verylonglonglonglonglonglongname',
-        password: '1'
-    }
+    body: form
 })
 const data = await res.json()
 console.log(data)
