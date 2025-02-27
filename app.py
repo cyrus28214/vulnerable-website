@@ -13,14 +13,16 @@ database.init_db()
 @app.route('/')
 def home():
     token = request.cookies.get('token')
+
+    print(token)
+    discussions = database.get_discussions()
     if not token:
-        return render_template('index.html')
+        return render_template('index.html', discussions=discussions)
     
     payload = verify_token(token)
     username = payload['username']
     user_detail = database.get_user_detail(username)
     print(user_detail)
-    discussions = database.get_discussions()
     return render_template('index.html', username=username, discussions=discussions, avatar=user_detail['avatar'])
 
 @app.route('/user')

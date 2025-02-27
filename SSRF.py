@@ -10,7 +10,7 @@ PORT = 8000
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/secret-image':
-            image_path = "static/images/default-avatar.png"
+            image_path = "./secret-image.png"
             try:
                 with open(image_path, 'rb') as file:
                     self.send_response(200)
